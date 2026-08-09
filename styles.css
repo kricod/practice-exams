@@ -78,6 +78,7 @@ body {
   font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overflow-wrap: break-word;
 }
 
 .wrap { width: 100%; max-width: 880px; margin: 0 auto; padding: 0 20px; }
@@ -101,14 +102,21 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
   color: inherit;
   text-decoration: none;
   font-weight: 650;
   letter-spacing: -0.01em;
 }
-.brand-mark { font-size: 20px; }
-.brand-text { font-size: 15px; }
-.header-actions { display: flex; align-items: center; gap: 8px; }
+.brand-mark { font-size: 20px; flex: 0 0 auto; }
+.brand-text {
+  font-size: 15px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.header-actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
 
 .icon-btn {
   display: inline-flex;
@@ -139,7 +147,10 @@ body {
 .site-footer p { margin: 0 0 6px; }
 .credits { font-size: 12px; opacity: .85; }
 
-main { flex: 1; padding: 32px 20px 56px; }
+/* `main` carries .wrap, whose class specificity beats a bare `main` selector —
+   the vertical padding must be set on main.wrap or it is silently dropped. */
+main { flex: 1; }
+main.wrap { padding-top: 32px; padding-bottom: 56px; }
 
 /* ---------- typography ---------- */
 h1 { font-size: 30px; line-height: 1.25; margin: 0 0 10px; letter-spacing: -0.02em; }
@@ -215,17 +226,18 @@ h2 { font-size: 20px; margin: 0 0 12px; letter-spacing: -0.01em; }
 .mode-desc { font-size: 13.5px; color: var(--color-text-secondary); line-height: 1.5; }
 
 .field-row { display: flex; flex-wrap: wrap; gap: 18px; margin-bottom: 26px; }
-.field { display: flex; flex-direction: column; gap: 6px; }
+.field { display: flex; flex-direction: column; gap: 6px; flex: 1 1 220px; min-width: 0; max-width: 300px; }
 .field label { font-size: 13px; font-weight: 600; color: var(--color-text-secondary); }
 .field select {
-  font: inherit;
+  font: inherit;               /* 16px — smaller would trigger iOS zoom-on-focus */
   padding: 9px 12px;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-primary);
   cursor: pointer;
-  min-width: 200px;
+  width: 100%;
+  max-width: 100%;
 }
 
 /* ---------- quiz progress ---------- */
@@ -452,9 +464,39 @@ h2 { font-size: 20px; margin: 0 0 12px; letter-spacing: -0.01em; }
 
 @media (max-width: 640px) {
   h1 { font-size: 24px; }
-  main { padding: 24px 16px 44px; }
+  h2 { font-size: 18px; }
+  .wrap { padding-left: 16px; padding-right: 16px; }
+  main.wrap { padding-top: 24px; padding-bottom: 44px; }
   .card { padding: 18px; }
-  .brand-text { display: none; }
+  .brand-text { font-size: 13.5px; }
+  .field { max-width: none; }   /* selects span the full width on phones */
   .bd-name { flex-basis: 38%; font-size: 13px; }
   .question-text { font-size: 16px; }
+  .lead { margin-bottom: 22px; }
+
+  /* touch targets: 36px is below the 44px minimum */
+  .icon-btn { width: 44px; height: 44px; }
+  .btn { min-height: 44px; padding: 11px 18px; }
+
+  /* stack the quiz controls: Quit stays a compact ghost at the top, the
+     real actions span the width at the bottom, inside thumb reach */
+  .nav-row { flex-direction: column; align-items: stretch; gap: 12px; }
+  .nav-row > .btn-ghost { align-self: flex-start; }
+  /* flex-basis auto (not 0) so a long label like "Next question" sizes to its
+     text; .btn-row still wraps if the pair cannot fit on one line */
+  .nav-row .btn-row { width: 100%; }
+  .nav-row .btn-row .btn { flex: 1 1 auto; }
+
+  .score-hero { padding: 26px 16px; }
+  .explanation { padding: 14px 15px; }
+  .review-head { padding: 12px 13px; }
+  .review-body { padding: 4px 13px 16px; }
+  .choice { padding: 12px 13px; gap: 10px; }
+}
+
+/* narrow phones: one stat per row reads better than two cramped columns */
+@media (max-width: 380px) {
+  .stat { flex-basis: 100%; }
+  .stat-row { gap: 10px; }
+  .verdict { padding: 12px 13px; font-size: 15px; }
 }
