@@ -25,11 +25,14 @@ python3 -m http.server 8000    # then open http://localhost:8000
 | `app.js` | Quiz logic, grading, results |
 | `questions.js` | Question bank (`window.QUESTIONS`), generated |
 | `test-app.js` | End-to-end jsdom test suite |
+| `CLAUDE.md` | Architecture notes for Claude Code |
 
 ## Modes
 
 - **Practice** — submit one question at a time, see correct/incorrect and the explanation before moving on. Choose session length (10–171 questions) and filter by exam domain.
 - **Exam simulation** — 65 questions, 170 minutes, no feedback until the end.
+
+**Finish** ends a session early and jumps straight to the results. In practice mode you are scored only on the questions you answered; in exam mode the skipped questions count as incorrect, the way the real exam marks them.
 
 At the end you get a score ring, pass/fail against the 75% mark, a per-domain breakdown, an expandable review of every question, and a **Retry the ones I missed** button.
 
@@ -44,7 +47,7 @@ At the end you get a score ring, pass/fail against the 75% mark, a per-domain br
 
 Domain coverage: 65 Design · 33 Implementation · 41 Management & Operation · 32 Security & Governance. 32 questions are multi-answer (Select TWO/THREE).
 
-One question (`dt-84`) is flagged in-app as having a **contested answer key** — the source key names an "ALB with a TLS listener", which is not a thing ALB supports. The explanation notes this.
+One question (`dt-84`) has a **contested answer key**. The source key is D, an "ALB with a TLS listener" — but ALB supports only HTTP and HTTPS listener protocols, and TLS is not a valid ALB target group protocol, so that option cannot be built. This app grades the question as **C** (NLB with a TCP listener, passing the handshake through to the instances). The original key is kept in the entry as `source_answer`, and the question carries an in-app banner noting the dispute.
 
 ### A note on ExamTopics
 
@@ -69,6 +72,8 @@ The original request was to pull questions from ExamTopics. Only the first 10 qu
 }
 ```
 
+Two optional fields exist for questions whose published key is wrong: `answer_disputed: true` renders a warning banner under the explanation, and `source_answer` records what the original key said. Only `dt-84` uses them.
+
 To add questions, append objects in that shape and reload the page.
 
 ## Tests
@@ -78,7 +83,9 @@ npm install jsdom
 node test-app.js
 ```
 
-37 assertions covering the home screen, question rendering, selection, grading, explanations, session completion, results, review expansion, retry-missed, exam mode, and the theme toggle.
+43 assertions covering the home screen, question rendering, selection, grading, explanations, session completion, results, review expansion, retry-missed, exam mode, the theme toggle, mode persistence when returning home, and the finish-early flow.
+
+The suite drives one long-lived jsdom instance and its sections share DOM state, so they must run in order — it is all-or-nothing, and `node test-app.js` exits non-zero if any assertion fails.
 
 ## Disclaimer
 
