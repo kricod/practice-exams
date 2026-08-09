@@ -130,19 +130,22 @@
 
       '<h2>Choose a mode</h2>' +
       '<div class="mode-grid">' +
-        '<button class="mode-card selected" data-mode="practice">' +
+        '<button class="mode-card' + (state.mode === 'exam' ? '' : ' selected') +
+          '" data-mode="practice">' +
           '<div class="mode-title">📚 Practice</div>' +
           '<div class="mode-desc">Submit one question at a time. See instantly whether ' +
           'you were right, with the explanation before you move on.</div>' +
         '</button>' +
-        '<button class="mode-card" data-mode="exam">' +
+        '<button class="mode-card' + (state.mode === 'exam' ? ' selected' : '') +
+          '" data-mode="exam">' +
           '<div class="mode-title">⏱️ Exam simulation</div>' +
           '<div class="mode-desc">' + EXAM_SIZE + ' questions, ' + EXAM_MINUTES +
           ' minutes, no feedback until the end — like the real thing.</div>' +
         '</button>' +
       '</div>' +
 
-      '<div class="field-row" id="practiceOpts">' +
+      '<div class="field-row" id="practiceOpts"' +
+        (state.mode === 'exam' ? ' style="display:none"' : '') + '>' +
         '<div class="field"><label for="countSel">Length</label>' +
           '<select id="countSel">' + countOpts + '</select></div>' +
         '<div class="field"><label for="domainSel">Domain filter</label>' +
@@ -273,6 +276,7 @@
         '<div class="nav-row">' +
           '<button class="btn btn-ghost" id="quitBtn">Quit</button>' +
           '<div class="btn-row">' +
+            '<button class="btn btn-secondary" id="finishBtn">Finish</button>' +
             '<button class="btn btn-primary" id="submitBtn" disabled>' +
               (state.mode === 'exam' ? 'Save answer' : 'Submit') + '</button>' +
           '</div>' +
@@ -307,6 +311,37 @@
         renderHome();
       }
     });
+
+    app.querySelector('#finishBtn').addEventListener('click', finishEarly);
+  }
+
+  // Skip the remaining questions and jump straight to the results screen.
+  // Exam mode keeps the full pool, so unanswered questions score as wrong —
+  // that is how the real exam is marked. Practice mode instead scores only
+  // what was actually attempted.
+  function finishEarly() {
+    var answered = Object.keys(state.answers).length;
+    var left = state.pool.length - answered;
+    if (left <= 0) { finish(); return; }
+
+    if (state.mode === 'exam') {
+      if (!confirm('Finish the exam now? The ' + left + ' unanswered question' +
+        (left === 1 ? '' : 's') + ' will be marked incorrect.')) return;
+      finish();
+      return;
+    }
+
+    if (!answered) {
+      if (!confirm('You have not answered anything yet. End this session?')) return;
+      stopTimer();
+      renderHome();
+      return;
+    }
+    if (!confirm('Finish now? You will be scored on the ' + answered +
+      ' question' + (answered === 1 ? '' : 's') + ' you have answered.')) return;
+
+    state.pool = state.pool.filter(function (q) { return state.answers[q.id]; });
+    finish();
   }
 
   function scoreSoFar() {

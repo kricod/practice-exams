@@ -7,7 +7,7 @@ window.QUESTIONS = [
   "topic": "NLB / EKS load balancing",
   "difficulty": "medium",
   "multi": false,
-  "question": "A company is planning to create a service that requires encryption in transit. The traffic must not be decrypted between the client and the backend of the service. The company will implement the service by using the gRPC protocol over TCP port 443. The service will scale up to thousands of simultaneous connections. The backend of the service will be hosted on an Amazon Elastic Kubernetes Service (Amazon EKS) duster with the Kubernetes Cluster Autoscaler and the Horizontal Pod Autoscaler configured. The company needs to use mutual TLS for two-way authentication between the client and the backend. Which solution will meet these requirements?",
+  "question": "A company is planning to create a service that requires encryption in transit. The traffic must not be decrypted between the client and the backend of the service. The company will implement the service by using the gRPC protocol over TCP port 443. The service will scale up to thousands of simultaneous connections. The backend of the service will be hosted on an Amazon Elastic Kubernetes Service (Amazon EKS) cluster with the Kubernetes Cluster Autoscaler and the Horizontal Pod Autoscaler configured. The company needs to use mutual TLS for two-way authentication between the client and the backend. Which solution will meet these requirements?",
   "choices": {
    "A": "Install the AWS Load Balancer Controller for Kubernetes. Using that controller, configure a Network Load Balancer with a TCP listener on port 443 to forward traffic to the IP addresses of the backend service Pods.",
    "B": "Install the AWS Load Balancer Controller for Kubernetes. Using that controller, configure an Application Load Balancer with an HTTPS listener on port 443 to forward traffic to the IP addresses of the backend service Pods.",
@@ -49,7 +49,7 @@ window.QUESTIONS = [
   "choices": {
    "A": "Configure the ALB in a private subnet of the VPC. Attach an internet gateway without adding routes in the subnet route tables to point to the internet gateway. Configure the accelerator with endpoint groups that include the ALB endpoint. Configure the ALB's security group to only allow inbound traffic from the internet on the ALB listener port.",
    "B": "Configure the ALB in a private subnet of the VPC. Configure the accelerator with endpoint groups that include the ALB endpoint. Configure the ALB's security group to only allow inbound traffic from the internet on the ALB listener port.",
-   "C": "Configure the ALB in a public subnet of the VPAttach an internet gateway. Add routes in the subnet route tables to point to the internet gateway. Configure the accelerator with endpoint groups that include the ALB endpoint. Configure the ALB's security group to only allow inbound traffic from the accelerator's IP addresses on the ALB listener port.",
+   "C": "Configure the ALB in a public subnet of the VPC. Attach an internet gateway. Add routes in the subnet route tables to point to the internet gateway. Configure the accelerator with endpoint groups that include the ALB endpoint. Configure the ALB's security group to only allow inbound traffic from the accelerator's IP addresses on the ALB listener port.",
    "D": "Configure the ALB in a private subnet of the VPC. Attach an internet gateway. Add routes in the subnet route tables to point to the internet gateway. Configure the accelerator with endpoint groups that include the ALB endpoint. Configure the ALB's security group to only allow inbound traffic from the accelerator's IP addresses on the ALB listener port."
   },
   "answer": [
@@ -68,7 +68,7 @@ window.QUESTIONS = [
   "choices": {
    "A": "Create a central transit gateway. Create a VPC attachment to each application VPC. Provide full mesh connectivity between all the VPCs by using the transit gateway.",
    "B": "Create VPC peering connections between the central shared services VPC and each application VPC in each business unit's AWS account.",
-   "C": "Create VPC endpoint services powered by AWS PrivateLink in the central shared services VPCreate VPC endpoints in each application VPC.",
+   "C": "Create VPC endpoint services powered by AWS PrivateLink in the central shared services VPC. Create VPC endpoints in each application VPC.",
    "D": "Create a central transit VPC with a VPN appliance from AWS Marketplace. Create a VPN attachment from each VPC to the transit VPC. Provide full mesh connectivity among all the VPCs."
   },
   "answer": [
@@ -205,13 +205,13 @@ window.QUESTIONS = [
   "topic": "Route 53 Resolver / hybrid DNS",
   "difficulty": "hard",
   "multi": true,
-  "question": "A company is using custom DNS servers that run BIND for name resolution in its VPCs. The VPCs are deployed across multiple AWS accounts that are part of the same organization in AWS Organizations. All the VPCs are connected to a transit gateway. The BIND servers are running in a central VPC and are configured to forward all queries for an on-premises DNS domain to DNS servers that are hosted in an on-premises data center. To ensure that all the VPCs use the custom DNS servers, a network engineer has configured a VPC DHCP options set in all the VPCs that specifies the custom DNS servers to be used as domain name servers. Multiple development teams in the company want to use Amazon Elastic File System (Amazon EFS). A development team has created a new EFS file system but cannot mount the file system to one of its Amazon EC2 instances. The network engineer discovers that the EC2 instance cannot resolve the IP address for the EFS mount point fs-33444567d.efs.us-east-1. Amazonaws.com. The network engineer needs to implement a solution so that development teams throughout the organization can mount EFS file systems. Which combination of steps will meet these requirements? (Choose two.)",
+  "question": "A company is using custom DNS servers that run BIND for name resolution in its VPCs. The VPCs are deployed across multiple AWS accounts that are part of the same organization in AWS Organizations. All the VPCs are connected to a transit gateway. The BIND servers are running in a central VPC and are configured to forward all queries for an on-premises DNS domain to DNS servers that are hosted in an on-premises data center. To ensure that all the VPCs use the custom DNS servers, a network engineer has configured a VPC DHCP options set in all the VPCs that specifies the custom DNS servers to be used as domain name servers. Multiple development teams in the company want to use Amazon Elastic File System (Amazon EFS). A development team has created a new EFS file system but cannot mount the file system to one of its Amazon EC2 instances. The network engineer discovers that the EC2 instance cannot resolve the IP address for the EFS mount point fs-33444567d.efs.us-east-1.amazonaws.com. The network engineer needs to implement a solution so that development teams throughout the organization can mount EFS file systems. Which combination of steps will meet these requirements? (Choose two.)",
   "choices": {
-   "A": "Configure the BIND DNS servers in the central VPC to forward queries for efs.us-east-1. Amazonaws.com to the Amazon provided DNS server (169.254.169.253).",
+   "A": "Configure the BIND DNS servers in the central VPC to forward queries for efs.us-east-1.amazonaws.com to the Amazon provided DNS server (169.254.169.253).",
    "B": "Create an Amazon Route 53 Resolver outbound endpoint in the central VPC. Update all the VPC DHCP options sets to use AmazonProvidedDNS for name resolution.",
-   "C": "Create an Amazon Route 53 Resolver inbound endpoint in the central VPUpdate all the VPC DHCP options sets to use the Route 53 Resolver inbound endpoint in the central VPC for name resolution.",
+   "C": "Create an Amazon Route 53 Resolver inbound endpoint in the central VPC. Update all the VPC DHCP options sets to use the Route 53 Resolver inbound endpoint in the central VPC for name resolution.",
    "D": "Create an Amazon Route 53 Resolver rule to forward queries for the on-premises domain to the on-premises DNS servers. Share the rule with the organization by using AWS Resource Access Manager (AWS RAM). Associate the rule with all the VPCs.",
-   "E": "Create an Amazon Route 53 private hosted zone for the efs.us-east-1. Amazonaws.com domain. Associate the private hosted zone with the VPC where the EC2 instance is deployed. Create an A record for fs-33444567d.efs.us-east-1. Amazonaws.com in the private hosted zone. Configure the A record to return the mount target of the EFS mount point."
+   "E": "Create an Amazon Route 53 private hosted zone for the efs.us-east-1.amazonaws.com domain. Associate the private hosted zone with the VPC where the EC2 instance is deployed. Create an A record for fs-33444567d.efs.us-east-1.amazonaws.com in the private hosted zone. Configure the A record to return the mount target of the EFS mount point."
   },
   "answer": [
    "B",
@@ -266,12 +266,12 @@ window.QUESTIONS = [
   "multi": true,
   "question": "A company has expanded its network to the AWS Cloud by using a hybrid architecture with multiple AWS accounts. The company has set up a shared AWS account for the connection to its on-premises data centers and the company offices. The workloads consist of private web-based services for internal use. These services run in different AWS accounts. Office-based employees consume these services by using a DNS name in an on-premises DNS zone that is named example.internal. The process to register a new service that runs on AWS requires a manual and complicated change request to the internal DNS. The process involves many teams. The company wants to update the DNS registration process by giving the service creators access that will allow them to register their DNS records. A network engineer must design a solution that will achieve this goal. The solution must maximize cost-effectiveness and must require the least possible number of configuration changes. Which combination of steps should the network engineer take to meet these requirements? (Choose three.)",
   "choices": {
-   "A": "Create a record for each service in its local private hosted zone (serviceA. Account1. Aws.example.internal). Provide this DNS record to the employees who need access.",
+   "A": "Create a record for each service in its local private hosted zone (serviceA.account1.aws.example.internal). Provide this DNS record to the employees who need access.",
    "B": "Create an Amazon Route 53 Resolver inbound endpoint in the shared account VPC. Create a conditional forwarder for a domain named aws.example.internal on the on-premises DNS servers. Set the forwarding IP addresses to the inbound endpoint's IP addresses that were created.",
    "C": "Create an Amazon Route 53 Resolver rule to forward any queries made to onprem.example.internal to the on-premises DNS servers.",
    "D": "Create an Amazon Route 53 private hosted zone named aws.example.internal in the shared AWS account to resolve queries for this domain.",
    "E": "Launch two Amazon EC2 instances in the shared AWS account. Install BIND on each instance. Create a DNS conditional forwarder on each BIND server to forward queries for each subdomain under aws.example.internal to the appropriate private hosted zone in each AWS account. Create a conditional forwarder for a domain named aws.example.internal on the on-premises DNS servers. Set the forwarding IP addresses to the IP addresses of the BIND servers.",
-   "F": "Create a private hosted zone in the shared AWS account for each account that runs the service. Configure the private hosted zone to contain aws.example.internal in the domain (account1. Aws.example.internal). Associate the private hosted zone with the VPC that runs the service and the shared account VPC."
+   "F": "Create a private hosted zone in the shared AWS account for each account that runs the service. Configure the private hosted zone to contain aws.example.internal in the domain (account1.aws.example.internal, for example). Associate the private hosted zone with the VPC that runs the service and the shared account VPC."
   },
   "answer": [
    "B",
@@ -311,8 +311,8 @@ window.QUESTIONS = [
    "A": "Validate that private DNS is enabled on the VPC by setting the enableDnsHostnames VPC attribute and the enableDnsSupport VPC attribute to true.",
    "B": "Create a new security group with an entry to allow outbound traffic that uses the TCP protocol on port 443 to destination 0.0.0.0/0.",
    "C": "Create a new security group with entries to allow inbound traffic that uses the TCP protocol on port 443 from the IP prefixes of the private subnets.",
-   "D": "Create the following interface VPC endpoints in the VPC: com. Amazonaws.us-west-2.logs and com. Amazonaws.us-west-2.monitoring. Associate the new security group with the endpoint network interfaces.",
-   "E": "Create the following interface VPC endpoint in the VPC: com. Amazonaws.us-west-2.cloudwatch. Associate the new security group with the endpoint network interfaces.",
+   "D": "Create the following interface VPC endpoints in the VPC: com.amazonaws.us-west-2.logs and com.amazonaws.us-west-2.monitoring. Associate the new security group with the endpoint network interfaces.",
+   "E": "Create the following interface VPC endpoint in the VPC: com.amazonaws.us-west-2.cloudwatch. Associate the new security group with the endpoint network interfaces.",
    "F": "Associate the VPC endpoint or endpoints with route tables that the private subnets use."
   },
   "answer": [
@@ -426,7 +426,7 @@ window.QUESTIONS = [
   "topic": "Route 53 Resolver endpoints",
   "difficulty": "medium",
   "multi": true,
-  "question": "A company uses a hybrid architecture and has an AWS Direct Connect connection between its on-premises data center and AWS. The company has production applications that run in the on-premises data center. The company also has production applications that run in a VPC. The applications that run in the on-premises data center need to communicate with the applications that run in the VPC. The company is using corp.example.com as the domain name for the on-premises resources and is using an Amazon Route 53 private hosted zone for aws.example.com to host the VPC resources. The company is using an open-source recursive DNS resolver in a VPC subnet and is using a DNS resolver in the on-premises data center. The company's on-premises DNS resolver has a forwarder that directs requests for the aws.example.com domain name to the DNS resolver in the VPC. The DNS resolver in the VPC has a forwarder that directs requests for the corp.example.com domain name to the DNS resolver in the on-premises data center. The company has deckled to replace the open-source recursive DNS resolver with Amazon Route 53 Resolver endpoints. Which combination of steps should a network engineer take to make this replacement? (Choose three.)",
+  "question": "A company uses a hybrid architecture and has an AWS Direct Connect connection between its on-premises data center and AWS. The company has production applications that run in the on-premises data center. The company also has production applications that run in a VPC. The applications that run in the on-premises data center need to communicate with the applications that run in the VPC. The company is using corp.example.com as the domain name for the on-premises resources and is using an Amazon Route 53 private hosted zone for aws.example.com to host the VPC resources. The company is using an open-source recursive DNS resolver in a VPC subnet and is using a DNS resolver in the on-premises data center. The company's on-premises DNS resolver has a forwarder that directs requests for the aws.example.com domain name to the DNS resolver in the VPC. The DNS resolver in the VPC has a forwarder that directs requests for the corp.example.com domain name to the DNS resolver in the on-premises data center. The company has decided to replace the open-source recursive DNS resolver with Amazon Route 53 Resolver endpoints. Which combination of steps should a network engineer take to make this replacement? (Choose three.)",
   "choices": {
    "A": "Create a Route 53 Resolver rule to forward aws.example.com domain queries to the IP addresses of the outbound endpoint.",
    "B": "Configure the on-premises DNS resolver to forward aws.example.com domain queries to the IP addresses of the inbound endpoint.",
@@ -493,7 +493,7 @@ window.QUESTIONS = [
   "choices": {
    "A": "Set up an AWS Direct Connect connection from each data center to AWS in each Region. Create and attach private VIFs to a single Direct Connect gateway. Attach the Direct Connect gateway to all the VPCs. Remove the existing VPN connections that are attached directly to the virtual private gateways.",
    "B": "Create a single transit gateway with VPN connections from each data center. Share the transit gateway with each account by using AWS Resource Access Manager (AWS RAM). Attach the transit gateway to each VPC. Remove the existing VPN connections that are attached directly to the virtual private gateways.",
-   "C": "Create a transit gateway in each Region with multiple newly commissioned VPN connections from each data center. Share the transit gateways with each account by using AWS Resource Access Manager (AWS RAM). In each Region, attach the transit gateway to each VPRemove the existing VPN connections that are attached directly to the virtual private gateways.",
+   "C": "Create a transit gateway in each Region with multiple newly commissioned VPN connections from each data center. Share the transit gateways with each account by using AWS Resource Access Manager (AWS RAM). In each Region, attach the transit gateway to each VPC. Remove the existing VPN connections that are attached directly to the virtual private gateways.",
    "D": "Peer all the VPCs in each Region to a new VPC in each Region that will function as a centralized transit VPC. Create new VPN connections from each data center to the transit VPCs. Terminate the original VPN connections that are attached to all the original VPCs. Retain the new VPN connection to the new transit VPC in each Region."
   },
   "answer": [
@@ -1058,7 +1058,7 @@ window.QUESTIONS = [
   "choices": {
    "A": "Deploy the EC2 instances in the public subnets. Create an S3 interface endpoint in the VPC. Modify the application configuration to use the S3 endpoint-specific DNS hostname.",
    "B": "Deploy the EC2 instances in the private subnets. Create a NAT gateway in the VPC. Create default routes in the private subnets to the NAT gateway. Connect to Amazon S3 by using the NAT gateway.",
-   "C": "Deploy the EC2 instances in the private subnets. Create an S3 gateway endpoint in the VPSpecify die route table of the private subnets during endpoint creation to create routes to Amazon S3.",
+   "C": "Deploy the EC2 instances in the private subnets. Create an S3 gateway endpoint in the VPC. Specify the route table of the private subnets during endpoint creation to create routes to Amazon S3.",
    "D": "Deploy the EC2 instances in the private subnets. Create an S3 interface endpoint in the VPC. Modify the application configuration to use the S3 endpoint-specific DNS hostname."
   },
   "answer": [
@@ -1149,7 +1149,7 @@ window.QUESTIONS = [
   "topic": "Route 53 Resolver Query Logging",
   "difficulty": "easy",
   "multi": false,
-  "question": "A company is using Amazon Route 53 Resolver for its hybrid DNS infrastructure. The company is using Route 53 Resolver forwarding rules for authoritative domains that are hosted on on-premises DNS servers. The company achieves hybrid network connectivity by using an AWS Site-to-Site VPNconnection. A new governance policy requires logging for DNS traffic that originates in the AWS Cloud. The policy also requires the company to query DNS traffic to identify the source IP address of the resources that the query originated from, along with the DNS name that was requested. Which solution will meet these requirements?",
+  "question": "A company is using Amazon Route 53 Resolver for its hybrid DNS infrastructure. The company is using Route 53 Resolver forwarding rules for authoritative domains that are hosted on on-premises DNS servers. The company achieves hybrid network connectivity by using an AWS Site-to-Site VPN connection. A new governance policy requires logging for DNS traffic that originates in the AWS Cloud. The policy also requires the company to query DNS traffic to identify the source IP address of the resources that the query originated from, along with the DNS name that was requested. Which solution will meet these requirements?",
   "choices": {
    "A": "Create VPC flow logs for all VPCs. Send the logs to Amazon CloudWatch Logs. Use CloudWatch Logs Insights to query the IP address and DNS name.",
    "B": "Configure Route 53 Resolver query logging for all VPCs. Send the logs to Amazon CloudWatch Logs. Use CloudWatch Logs Insights to query the IP address and DNS name.",
@@ -1292,7 +1292,7 @@ window.QUESTIONS = [
   "choices": {
    "A": "Configure a route table with the production and nonproduction VPC attachments associated with propagated routes for only the shared services VPC. Create an additional route table with only the shared services VPC attachment associated with propagated routes from the production and nonproduction VPCs.",
    "B": "Configure a route table with the production and nonproduction VPC attachments associated with propagated routes for each VPC. Create an additional route table with only the shared services VPC attachment associated with propagated routes from each VPC.",
-   "C": "Configure a route table with all the VPC attachments associated with propagated routes for only the shared services VPCreate an additional route table with only the shared services VPC attachment associated with propagated routes from the production and nonproduction VPCs.",
+   "C": "Configure a route table with all the VPC attachments associated with propagated routes for only the shared services VPC. Create an additional route table with only the shared services VPC attachment associated with propagated routes from the production and nonproduction VPCs.",
    "D": "Configure a route table with the production and nonproduction VPC attachments associated with propagated routes disabled. Create an additional route table with only the shared services VPC attachment associated with propagated routes from the production and nonproduction VPCs."
   },
   "answer": [
@@ -1482,7 +1482,7 @@ window.QUESTIONS = [
   "choices": {
    "A": "Create a central egress VPC that has private NAT gateways. Connect all the VPCs to the central egress VPC by using AWS Transit Gateway. Use the private NAT gateways to connect to Amazon S3 and Systems Manager by using private IP addresses.",
    "B": "Create a central shared services VPC. In the central shared services VPC, create interface VPC endpoints for Amazon S3 and Systems Manager to access. Ensure that private DNS is turned off. Connect all the VPCs to the central shared services VPC by using AWS Transit Gateway. Create an Amazon Route 53 forwarding rule for each interface VPC endpoint. Associate the forwarding rules with all the VPCs. Forward DNS queries to the interface VPC endpoints in the shared services VPC.",
-   "C": "Create a central shared services VPIn the central shared services VPC, create interface VPC endpoints for Amazon S3 and Systems Manager to access. Ensure that private DNS is turned off. Connect all the VPCs to the central shared services VPC by using AWS Transit Gateway. Create an Amazon Route 53 private hosted zone with a full service endpoint name for Amazon S3 and Systems Manager. Associate the private hosted zones with all the VPCs. Create an alias record in each private hosted zone with the full AWS service endpoint pointing to the interface VPC endpoint in the shared services VPC.",
+   "C": "Create a central shared services VPC. In the central shared services VPC, create interface VPC endpoints for Amazon S3 and Systems Manager to access. Ensure that private DNS is turned off. Connect all the VPCs to the central shared services VPC by using AWS Transit Gateway. Create an Amazon Route 53 private hosted zone with a full service endpoint name for Amazon S3 and Systems Manager. Associate the private hosted zones with all the VPCs. Create an alias record in each private hosted zone with the full AWS service endpoint pointing to the interface VPC endpoint in the shared services VPC.",
    "D": "Create a central shared services VPC. In the central shared services VPC, create interface VPC endpoints for Amazon S3 and Systems Manager to access. Connect all the VPCs to the central shared services VPC by using AWS Transit Gateway. Ensure that private DNS is turned on for the interface VPC endpoints and that the transit gateway is created with DNS support turned on."
   },
   "answer": [
@@ -1520,7 +1520,7 @@ window.QUESTIONS = [
   "choices": {
    "A": "Configure a private hosted zone for each application VPC, and create the requisite records. Create a set of Amazon Route 53 Resolver inbound and outbound endpoints in an egress VPC. Define Route 53 Resolver rules to forward requests for the on-premises domains to the on-premises DNS resolver. Associate the application VPC private hosted zones with the egress VPC, and share the Route 53 Resolver rules with the application accounts by using AWS Resource Access Manager. Configure the on-premises DNS servers to forward the cloud domains to the Route 53 inbound endpoints.",
    "B": "Configure a public hosted zone for each application VPC, and create the requisite records. Create a set of Amazon Route 53 Resolver inbound and outbound endpoints in an egress VPC. Define Route 53 Resolver rules to forward requests for the on-premises domains to the on-premises DNS resolver. Associate the application VPC private hosted zones with the egress VPC. and share the Route 53 Resolver rules with the application accounts by using AWS Resource Access Manager. Configure the on-premises DNS servers to forward the cloud domains to the Route 53 inbound endpoints.",
-   "C": "Configure a private hosted zone for each application VPC, and create the requisite records. Create a set of Amazon Route 53 Resolver inbound and outbound endpoints in an egress VPDefine Route 53 Resolver rules to forward requests for the on-premises domains to the on-premises DNS resolver. Associate the application VPC private hosted zones with the egress VPand share the Route 53 Resolver rules with the application accounts by using AWS Resource Access Manager. Configure the on-premises DNS servers to forward the cloud domains to the Route 53 outbound endpoints.",
+   "C": "Configure a private hosted zone for each application VPC, and create the requisite records. Create a set of Amazon Route 53 Resolver inbound and outbound endpoints in an egress VPC. Define Route 53 Resolver rules to forward requests for the on-premises domains to the on-premises DNS resolver. Associate the application VPC private hosted zones with the egress VPC and share the Route 53 Resolver rules with the application accounts by using AWS Resource Access Manager. Configure the on-premises DNS servers to forward the cloud domains to the Route 53 outbound endpoints.",
    "D": "Configure a private hosted zone for each application VPC, and create the requisite records. Create a set of Amazon Route 53 Resolver inbound and outbound endpoints in an egress VPC. Define Route 53 Resolver rules to forward requests for the on-premises domains to the on-premises DNS resolver. Associate the Route 53 outbound rules with the application VPCs, and share the private hosted zones with the application accounts by using AWS Resource Access Manager. Configure the on-premises DNS servers to forward the cloud domains to the Route 53 inbound endpoints."
   },
   "answer": [
@@ -1535,7 +1535,7 @@ window.QUESTIONS = [
   "topic": "Accelerated Site-to-Site VPN",
   "difficulty": "medium",
   "multi": false,
-  "question": "A global company runs business applications in the us-east-1 Region inside a VPC. One of the company's regional offices in London uses a virtual private gateway for an AWS Site-to-Site VPN connection tom the VPC. The company has configured a transit gateway and has set up peering between the VPC and other VPCs that various departments in the company use. Employees at the London office are experiencing latency issues when they connect to the business applications. What should a network engineer do to reduce this latency?",
+  "question": "A global company runs business applications in the us-east-1 Region inside a VPC. One of the company's regional offices in London uses a virtual private gateway for an AWS Site-to-Site VPN connection to the VPC. The company has configured a transit gateway and has set up peering between the VPC and other VPCs that various departments in the company use. Employees at the London office are experiencing latency issues when they connect to the business applications. What should a network engineer do to reduce this latency?",
   "choices": {
    "A": "Create a new Site-to-Site VPN connection. Set the transit gateway as the target gateway. Enable acceleration on the new Site-to-Site VPN connection. Update the VPN device in the London office with the new connection details.",
    "B": "Modify the existing Site-to-Site VPN connection by setting the transit gateway as the target gateway. Enable acceleration on the existing Site-to-Site VPN connection.",
@@ -1558,10 +1558,10 @@ window.QUESTIONS = [
   "choices": {
    "A": "Create the interface endpoint for Amazon SQS with the option for private DNS names turned on.",
    "B": "Create the interface endpoint for Amazon SQS with the option for private DNS names turned off.",
-   "C": "Manually create a private hosted zone for sqs.us-east-1. Amazonaws.com. Add necessary records that point to the interface endpoint. Associate the private hosted zones with other VPCs.",
-   "D": "Use the automatically created private hosted zone for sqs.us-east-1. Amazonaws.com with previously created necessary records that point to the interface endpoint. Associate the private hosted zones with other VPCs.",
-   "E": "Access the SQS endpoint by using the public DNS name sqs.us-east-1 amazonaws.com in VPCs and on premises.",
-   "F": "Access the SQS endpoint by using the private DNS name of the interface endpoint .sqs.us-east-1.vpce. Amazonaws.com in VPCs and on premises."
+   "C": "Manually create a private hosted zone for sqs.us-east-1.amazonaws.com. Add necessary records that point to the interface endpoint. Associate the private hosted zones with other VPCs.",
+   "D": "Use the automatically created private hosted zone for sqs.us-east-1.amazonaws.com with previously created necessary records that point to the interface endpoint. Associate the private hosted zones with other VPCs.",
+   "E": "Access the SQS endpoint by using the public DNS name sqs.us-east-1.amazonaws.com in VPCs and on premises.",
+   "F": "Access the SQS endpoint by using the private DNS name of the interface endpoint, vpce-xxxxxxxx.sqs.us-east-1.vpce.amazonaws.com, in VPCs and on premises."
   },
   "answer": [
    "B",
@@ -1634,7 +1634,7 @@ window.QUESTIONS = [
   "topic": "NLB TLS Passthrough / Mutual TLS",
   "difficulty": "hard",
   "multi": false,
-  "question": "A company has developed a new web application that processes confidential data that is hosted onAmazon EC2 instances. The application needs to scale and must use certificates to authenticate clients. The application is configured to request a client's certificate and will validate the certificate as part of the initial handshake. Which Elastic Load Balancing (ELB) solution will meet these requirements?",
+  "question": "A company has developed a new web application that processes confidential data that is hosted on Amazon EC2 instances. The application needs to scale and must use certificates to authenticate clients. The application is configured to request a client's certificate and will validate the certificate as part of the initial handshake. Which Elastic Load Balancing (ELB) solution will meet these requirements?",
   "choices": {
    "A": "Configure an Application Load Balancer (ALB) that includes an HTTPS listener on port 443. Create an Auto Scaling group for the EC2 instances. Configure the Auto Scaling group as the target group of the ALB. Configure HTTPS as the protocol for the target group.",
    "B": "Configure a Network Load Balancer (NLB) that includes a TLS listener on port 443. Create an Auto Scaling group for the EC2 instances. Configure the Auto Scaling group as the target group of the NLB. Configure the NLB to terminate TLS. Configure TLS as the protocol for the target group.",
@@ -1642,12 +1642,12 @@ window.QUESTIONS = [
    "D": "Configure an Application Load Balancer (ALB) that includes a TLS listener on port 443. Create an Auto Scaling group for the EC2 instances. Configure the Auto Scaling group as the target group of the ALB. Configure TLS as the protocol for the target group."
   },
   "answer": [
-   "D"
-  ],
-  "explanation": "The requirement states the application itself requests and validates the client certificate during the initial handshake, so the TLS session must terminate on the EC2 instances rather than on the load balancer. A Network Load Balancer with a TCP listener on port 443 passes the encrypted stream through untouched, letting the backend complete mutual TLS, and it scales with an Auto Scaling group registered in the target group — this is option C. Option A terminates TLS on the ALB and re-encrypts to the targets, so the client certificate never reaches the application. Option B terminates TLS on the NLB, which likewise breaks end-to-end client certificate validation by the application. The keyed answer D is not implementable as written: an Application Load Balancer supports only HTTP and HTTPS listener protocols — there is no TLS listener type on an ALB, and TLS is not a valid ALB target group protocol. (ALB does support mutual TLS today, but through an HTTPS listener with an mTLS trust store, which is still LB-side validation rather than the application-side validation described.)",
-  "answer_disputed": true,
-  "suggested_answer": [
    "C"
+  ],
+  "explanation": "The requirement states the application itself requests and validates the client certificate during the initial handshake, so the TLS session must terminate on the EC2 instances rather than on the load balancer. A Network Load Balancer with a TCP listener on port 443 passes the encrypted stream through untouched, letting the backend complete mutual TLS, and it scales with an Auto Scaling group registered in the target group — this is option C. Option A terminates TLS on the ALB and re-encrypts to the targets, so the client certificate never reaches the application. Option B terminates TLS on the NLB, which likewise breaks end-to-end client certificate validation by the application. Option D, which is the answer key published in the source question set, is not implementable as written: an Application Load Balancer supports only HTTP and HTTPS listener protocols — there is no TLS listener type on an ALB, and TLS is not a valid ALB target group protocol. (ALB does support mutual TLS today, but through an HTTPS listener with an mTLS trust store, which is still LB-side validation rather than the application-side validation described.) This app therefore grades C as correct.",
+  "answer_disputed": true,
+  "source_answer": [
+   "D"
   ]
  },
  {
@@ -1657,7 +1657,7 @@ window.QUESTIONS = [
   "topic": "S3 interface endpoint / hybrid access",
   "difficulty": "medium",
   "multi": false,
-  "question": "A company collects a high volume of shipping data and stores the data in an on-premises data center. A network engineer wants to use Amazon S3 to store the data during the first phase of a migration to AWS. During this phase, an application that resides in the data center will need to access the data privately in an S3 bucket that the company created. The company has set up an AWS Direct Connect connection with a private VIF to connect theon-premises data center to a VPC. The network engineer plans to use this Direct Connect connection forthe hybrid cloud setup. The solution must be highly available. What should the network engineer do next to implement this architecture?",
+  "question": "A company collects a high volume of shipping data and stores the data in an on-premises data center. A network engineer wants to use Amazon S3 to store the data during the first phase of a migration to AWS. During this phase, an application that resides in the data center will need to access the data privately in an S3 bucket that the company created. The company has set up an AWS Direct Connect connection with a private VIF to connect the on-premises data center to a VPC. The network engineer plans to use this Direct Connect connection forthe hybrid cloud setup. The solution must be highly available. What should the network engineer do next to implement this architecture?",
   "choices": {
    "A": "Configure an S3 gateway endpoint in the VPC. Update VPC route tables to route traffic to the S3 gateway endpoint. Configure the S3 gateway endpoint DNS name in the on-premises application.",
    "B": "Configure an S3 interface endpoint in the VPC. Configure the S3 interface endpoint DNS name in the on-premises application.",
@@ -2167,7 +2167,7 @@ window.QUESTIONS = [
   "answer": [
    "B"
   ],
-  "explanation": "Each Site-to-Site VPN tunnel is limited to approximately 1.25 Gbps, so aggregate throughput is increased by creating multiple VPN connections that use BGP and enabling equal-cost multipath on the transit gateway, which load balances flows across the tunnels. Option A reduces latency and jitter by moving traffic onto the AWS global network sooner but does not raise the per-tunnel throughput limit. Option C is wrong because VPN tunnels support a maximum MTU of 1500 bytes; the 8500-byte figure applies to other transit gateway attachment types. Option D does not work because ECMP requires dynamic routing across multiple VPN connections, and static routes on a single connection do not aggregate tunnel bandwidth."
+  "explanation": "Each Site-to-Site VPN tunnel is limited to approximately 1.25 Gbps, so aggregate throughput is increased by creating multiple VPN connections that use BGP and enabling equal-cost multipath on the transit gateway, which load balances flows across the tunnels. Option A reduces latency and jitter by moving traffic onto the AWS global network sooner but does not raise the per-tunnel throughput limit. Option C is wrong because a Site-to-Site VPN tunnel supports a maximum MTU of 1446 bytes; the 8500-byte figure applies to other transit gateway attachment types. Option D does not work because ECMP requires dynamic routing across multiple VPN connections, and static routes on a single connection do not aggregate tunnel bandwidth."
  },
  {
   "id": "gen-a-21",
@@ -2519,7 +2519,7 @@ window.QUESTIONS = [
   "answer": [
    "A"
   ],
-  "explanation": "Accelerated Site-to-Site VPN uses AWS Global Accelerator so that tunnel traffic enters the AWS global network at a nearby edge location, which reduces jitter and packet loss for long-haul internet paths; acceleration is supported only on VPN connections that terminate on a transit gateway and must be selected when the connection is created. Option B is invalid because virtual private gateway VPN connections cannot be accelerated and acceleration cannot be toggled on an existing connection. Option C is wrong because the maximum MTU for a VPN tunnel is 1500 bytes and tunnel inside CIDR sizing does not affect performance. Option D changes the connectivity model to per-user remote access, does not provide site-to-site routing, and does not address the underlying internet path quality."
+  "explanation": "Accelerated Site-to-Site VPN uses AWS Global Accelerator so that tunnel traffic enters the AWS global network at a nearby edge location, which reduces jitter and packet loss for long-haul internet paths; acceleration is supported only on VPN connections that terminate on a transit gateway and must be selected when the connection is created. Option B is invalid because virtual private gateway VPN connections cannot be accelerated and acceleration cannot be toggled on an existing connection. Option C is wrong because the maximum MTU for a Site-to-Site VPN tunnel is 1446 bytes and tunnel inside CIDR sizing does not affect performance. Option D changes the connectivity model to per-user remote access, does not provide site-to-site routing, and does not address the underlying internet path quality."
  },
  {
   "id": "gen-a-39",
@@ -2665,7 +2665,7 @@ window.QUESTIONS = [
   "multi": false,
   "question": "A data analytics cluster in a VPC uses an MTU of 9001 bytes between nodes and achieves high throughput. The company connects the VPC to an on-premises data center through AWS Site-to-Site VPN over the internet. After the change, large file transfers between the cluster and on-premises servers stall after the TCP handshake completes, although ping and SSH sessions work normally.\n\nWhat is the MOST likely cause of the issue?",
   "choices": {
-   "A": "The Site-to-Site VPN tunnel supports a maximum MTU of 1500 bytes for IPv4 traffic, and ICMP fragmentation needed messages are being blocked, which breaks path MTU discovery.",
+   "A": "The Site-to-Site VPN tunnel supports a maximum MTU of 1446 bytes for IPv4 traffic, and ICMP fragmentation needed messages are being blocked, which breaks path MTU discovery.",
    "B": "The virtual private gateway does not support jumbo frames on the AWS side of the tunnel, so the transit gateway must be used instead to enable a 9001-byte MTU end to end.",
    "C": "The instances are using the Intel 82599 virtual function driver instead of the Elastic Network Adapter, which limits the tunnel MTU to 1500 bytes.",
    "D": "The VPN tunnel is negotiating AES-256-GCM, which adds enough IPsec overhead to exceed the 9001-byte MTU of the VPC and causes silent drops."
@@ -2673,7 +2673,7 @@ window.QUESTIONS = [
   "answer": [
    "A"
   ],
-  "explanation": "AWS Site-to-Site VPN tunnels support an MTU of 1500 bytes for IPv4 traffic, so 9001-byte packets from the cluster must be fragmented or rejected. When a router or firewall drops the ICMP type 3 code 4 fragmentation needed message, the sending host never learns to lower its segment size, producing a classic PMTU black hole where small packets such as ping and interactive SSH succeed but bulk transfers stall. Transit gateway also caps VPN traffic at 1500 bytes, so option B does not fix anything. The network driver in use does not change the tunnel MTU, making option C irrelevant. IPsec overhead reduces the usable payload below 1500 bytes but does not interact with the 9001-byte VPC MTU in the way option D describes."
+  "explanation": "AWS Site-to-Site VPN tunnels support an MTU of 1446 bytes for IPv4 traffic, so 9001-byte packets from the cluster must be fragmented or rejected. When a router or firewall drops the ICMP type 3 code 4 fragmentation needed message, the sending host never learns to lower its segment size, producing a classic PMTU black hole where small packets such as ping and interactive SSH succeed but bulk transfers stall. Transit gateway also caps VPN attachment traffic at the same 1446-byte tunnel MTU, so option B does not fix anything. The network driver in use does not change the tunnel MTU, making option C irrelevant. IPsec overhead reduces the usable payload below 1500 bytes but does not interact with the 9001-byte VPC MTU in the way option D describes."
  },
  {
   "id": "gen-b-7",

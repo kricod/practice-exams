@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { JSDOM } = require('jsdom');
 
-const APP = '/home/tkrimi/projects/practice-exam';
+const APP = __dirname;
 let pass = 0, fail = 0;
 function ok(cond, label) {
   if (cond) { pass++; console.log('  ✓ ' + label); }
@@ -128,6 +128,23 @@ const darkOn = doc.documentElement.classList.contains('dark');
 $('#themeToggle').click();
 const darkOff = doc.documentElement.classList.contains('dark');
 ok(darkOn !== darkOff, 'theme toggle flips dark class');
+
+console.log('\n[10] Finish early');
+$('#brandHome').click();
+ok($$('.mode-card')[1].classList.contains('selected'), 'home remembers exam mode was selected');
+$$('.mode-card')[0].click();      // back to practice
+ok($('#practiceOpts').style.display !== 'none', 'practice options reappear');
+$('#countSel').value = '10';
+$('#startBtn').click();
+ok(!!$('#finishBtn'), 'finish button rendered during a question');
+const fi = $('.choice input');
+fi.checked = true;
+fi.dispatchEvent(new window.Event('change', { bubbles: true }));
+$('#submitBtn').click();          // grade question 1 of 10
+$('#finishBtn').click();          // skip the other 9
+ok(!!$('.score-hero'), 'finish jumps straight to results');
+ok($$('.review-item').length === 1, `only the answered question is scored (${$$('.review-item').length})`);
+ok(/^(0|100)%$/.test($('.score-pct').textContent.trim()), 'score is out of the answered question only: ' + $('.score-pct').textContent);
 
 console.log(`\n${'='.repeat(46)}\n  PASS ${pass}   FAIL ${fail}\n${'='.repeat(46)}`);
 process.exit(fail ? 1 : 0);
