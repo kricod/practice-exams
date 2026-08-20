@@ -1,6 +1,13 @@
-# AWS ANS-C01 Practice Exam
+# AWS Practice Exams
 
-A self-contained practice-exam web app for the **AWS Certified Advanced Networking – Specialty (ANS-C01)** exam. Pick an answer, hit submit, and get an immediate verdict plus a written explanation.
+A self-contained practice-exam web app covering two AWS certifications. Pick an exam, pick an answer, hit submit, and get an immediate verdict plus a written explanation.
+
+| Exam | Questions | Exam sim | Pass mark |
+|------|-----------|----------|-----------|
+| **AWS Certified Advanced Networking – Specialty** (ANS-C01) | 171 | 65 questions / 170 min | 75% |
+| **AWS Certified DevOps Engineer – Professional** (DOP-C02) | 250 | 75 questions / 180 min | 75% |
+
+The exam switcher is on the home screen; your choice is remembered across reloads.
 
 ## Run it
 
@@ -22,23 +29,29 @@ python3 -m http.server 8000    # then open http://localhost:8000
 |------|---------|
 | `index.html` | Page shell |
 | `styles.css` | Styling — light/dark theme |
-| `app.js` | Quiz logic, grading, results |
-| `questions.js` | Question bank (`window.QUESTIONS`), generated |
+| `exams.js` | Exam registry (`window.EXAMS`) — domains, pass mark, exam size and duration per exam |
+| `app.js` | Quiz logic, grading, results — exam-agnostic |
+| `questions-ans-c01.js` | ANS-C01 bank, generated |
+| `questions-dop-c02.js` | DOP-C02 bank, generated |
 | `test-app.js` | End-to-end jsdom test suite |
 | `CLAUDE.md` | Architecture notes for Claude Code |
 
+Each bank registers itself into `window.QUESTION_BANKS` under its exam ID. Adding a third exam means adding an entry to `exams.js`, shipping a `questions-<id>.js` bank, and adding both `<script>` tags — `app.js` needs no changes.
+
 ## Modes
 
-- **Practice** — submit one question at a time, see correct/incorrect and the explanation before moving on. Choose session length (10–171 questions) and filter by exam domain.
-- **Exam simulation** — 65 questions, 170 minutes, no feedback until the end.
+- **Practice** — submit one question at a time, see correct/incorrect and the explanation before moving on. Choose session length and filter by exam domain.
+- **Exam simulation** — the real exam's question count and time limit, no feedback until the end.
 
 **Finish** ends a session early and jumps straight to the results. In practice mode you are scored only on the questions you answered; in exam mode the skipped questions count as incorrect, the way the real exam marks them.
 
 At the end you get a score ring, pass/fail against the 75% mark, a per-domain breakdown, an expandable review of every question, and a **Retry the ones I missed** button.
 
-## Question bank
+## Question banks
 
-171 questions, each with an explanation, a domain tag, a topic, and a difficulty rating.
+Every question in both banks carries an explanation, a domain tag, a topic and a difficulty rating.
+
+### ANS-C01 — 171 questions
 
 | Source | Count | Notes |
 |--------|-------|-------|
@@ -49,19 +62,40 @@ Domain coverage: 65 Design · 33 Implementation · 41 Management & Operation · 
 
 One question (`dt-84`) has a **contested answer key**. The source key is D, an "ALB with a TLS listener" — but ALB supports only HTTP and HTTPS listener protocols, and TLS is not a valid ALB target group protocol, so that option cannot be built. This app grades the question as **C** (NLB with a TCP listener, passing the handshake through to the instances). The original key is kept in the entry as `source_answer`, and the question carries an in-app banner noting the dispute.
 
+### DOP-C02 — 250 questions
+
+Entirely original. Unlike ANS-C01 there is **no open community bank for this exam** — the Ditectrev organisation publishes practice sets for SAA-C03, DVA-C02, CLF-C02, MLS-C01, SOA-C03, SCS-C02, ANS-C01, DAS-C01 and DBS-C01, but nothing for DOP-C02. Every question here was written for this app.
+
+Questions are weighted to the official DOP-C02 exam guide domain percentages:
+
+| # | Domain | Guide weight | Questions |
+|---|--------|--------------|-----------|
+| 1 | SDLC Automation | 22% | 55 |
+| 2 | Configuration Management and IaC | 17% | 43 |
+| 3 | Resilient Cloud Solutions | 15% | 37 |
+| 4 | Monitoring and Logging | 15% | 38 |
+| 5 | Incident and Event Response | 14% | 35 |
+| 6 | Security and Compliance | 17% | 42 |
+
+Difficulty splits 169 medium · 61 hard · 20 easy. 21 questions are multi-answer (Select TWO/THREE) — a lower share than the ANS-C01 bank's 32 of 171, so multi-answer practice is thinner here than on the real exam.
+
 ### A note on ExamTopics
 
-The original request was to pull questions from ExamTopics. Only the first 10 questions of that exam are publicly readable — everything past page 1 sits behind their paid "Contributor Access" login, which this project does not attempt to circumvent. Those 10 free questions turned out to be duplicates of questions already in the Ditectrev set, so they added nothing beyond it.
+Both banks were asked to draw on ExamTopics, and neither does.
 
-## Regenerating the bank
+For ANS-C01, only the first 10 questions of that exam are publicly readable — everything past page 1 sits behind their paid "Contributor Access" login, which this project does not attempt to circumvent. Those 10 free questions turned out to be duplicates of questions already in the Ditectrev set.
 
-`questions.js` is generated. Each entry has this shape:
+For DOP-C02, `www.examtopics.com` is additionally unreachable from the environment this bank was written in (blocked by an egress policy), and their question text is copyrighted material scraped from the exam, so reproducing it here would be a licensing problem independent of access. The bank is original work informed by the published AWS exam guide instead.
+
+## Regenerating the banks
+
+Both `questions-*.js` files are generated. Each entry has this shape:
 
 ```js
 {
   id: "dt-1",
   source: "ditectrev",        // or "authored"
-  domain: 1,                   // 1-4
+  domain: 1,                   // key into the exam's domains map in exams.js
   topic: "NLB/ALB",
   difficulty: "medium",        // easy | medium | hard
   multi: false,
@@ -74,7 +108,7 @@ The original request was to pull questions from ExamTopics. Only the first 10 qu
 
 Two optional fields exist for questions whose published key is wrong: `answer_disputed: true` renders a warning banner under the explanation, and `source_answer` records what the original key said. Only `dt-84` uses them.
 
-To add questions, append objects in that shape and reload the page.
+To add questions, append objects in that shape and reload the page. A `domain` value that is not in the exam's `domains` map still renders, but lands in an "Uncategorised" row on the results breakdown.
 
 ## Tests
 
@@ -83,7 +117,7 @@ npm install jsdom
 node test-app.js
 ```
 
-43 assertions covering the home screen, question rendering, selection, grading, explanations, session completion, results, review expansion, retry-missed, exam mode, the theme toggle, mode persistence when returning home, and the finish-early flow.
+62 assertions covering the home screen, question rendering, selection, grading, explanations, session completion, results, review expansion, retry-missed, exam mode, the theme toggle, mode persistence when returning home, the finish-early flow, the exam switcher, DOP-C02's own exam constants, and a structural integrity check over every question in both banks.
 
 The suite drives one long-lived jsdom instance and its sections share DOM state, so they must run in order — it is all-or-nothing, and `node test-app.js` exits non-zero if any assertion fails.
 

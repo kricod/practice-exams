@@ -16,8 +16,10 @@ const { window } = dom;
 window.confirm = () => true;
 window.scrollTo = () => {};
 
-// load scripts manually in order
-window.eval(fs.readFileSync(path.join(APP, 'questions.js'), 'utf8'));
+// load scripts manually in order — registry, then each bank, then the app
+window.eval(fs.readFileSync(path.join(APP, 'exams.js'), 'utf8'));
+window.eval(fs.readFileSync(path.join(APP, 'questions-ans-c01.js'), 'utf8'));
+window.eval(fs.readFileSync(path.join(APP, 'questions-dop-c02.js'), 'utf8'));
 window.eval(fs.readFileSync(path.join(APP, 'app.js'), 'utf8'));
 
 const doc = window.document;
@@ -36,7 +38,12 @@ async function main() {
 await ready();
 
 console.log('\n[1] Home screen');
-ok(window.QUESTIONS.length > 100, `question bank loaded (${window.QUESTIONS.length})`);
+const BANKS = window.QUESTION_BANKS;
+ok(BANKS['ans-c01'].length > 100, `ANS-C01 bank loaded (${BANKS['ans-c01'].length})`);
+ok(BANKS['dop-c02'].length > 100, `DOP-C02 bank loaded (${BANKS['dop-c02'].length})`);
+ok(Object.keys(window.EXAMS).length === 2, 'exam registry holds both exams');
+ok($$('.exam-card').length === 2, 'exam switcher renders one card per exam');
+ok($$('.exam-card')[0].classList.contains('selected'), 'first exam is selected on boot');
 ok(!!$('#startBtn'), 'start button rendered');
 ok($$('.mode-card').length === 2, 'two mode cards');
 ok($$('#countSel option').length > 0, 'length selector populated');
@@ -145,6 +152,58 @@ $('#finishBtn').click();          // skip the other 9
 ok(!!$('.score-hero'), 'finish jumps straight to results');
 ok($$('.review-item').length === 1, `only the answered question is scored (${$$('.review-item').length})`);
 ok(/^(0|100)%$/.test($('.score-pct').textContent.trim()), 'score is out of the answered question only: ' + $('.score-pct').textContent);
+
+console.log('\n[11] Switching exams');
+$('#brandHome').click();
+$$('.exam-card')[1].click();                      // -> DOP-C02
+ok(/DevOps Engineer/.test($('h1').textContent), 'home retitles for the new exam: ' + $('h1').textContent.trim());
+ok($$('.exam-card')[1].classList.contains('selected'), 'DOP-C02 card is now selected');
+ok($$('#domainSel option').length === 7, `DOP-C02 domain filter shows 6 domains plus All (${$$('#domainSel option').length})`);
+ok(/^250$/.test($('.stat-value').textContent.trim()), 'stat row reflects the DOP-C02 bank size: ' + $('.stat-value').textContent.trim());
+ok(/DOP-C02/.test(doc.title), 'page title follows the active exam: ' + doc.title);
+ok(/DevOps Engineer/.test($('#footerNote').textContent), 'footer note follows the active exam');
+
+console.log('\n[12] DOP-C02 exam constants');
+$$('.mode-card')[1].click();                      // exam simulation
+ok(/75 questions, 180 minutes/.test($$('.mode-card')[1].textContent.replace(/\s+/g, ' ')),
+   'exam card states this exam\'s size and duration');
+$('#startBtn').click();
+ok(!!$('#timer'), 'DOP-C02 exam renders a timer');
+ok(/Question 1 of 75/.test($('.quiz-meta').textContent.replace(/\s+/g, ' ')), 'exam pool is 75 questions');
+
+console.log('\n[13] DOP-C02 practice grading');
+$('#brandHome').click();
+$$('.mode-card')[0].click();                      // back to practice
+$('#countSel').value = '10';
+$('#startBtn').click();
+const dopInput = $('.choice input');
+dopInput.checked = true;
+dopInput.dispatchEvent(new window.Event('change', { bubbles: true }));
+$('#submitBtn').click();
+ok(!!$('.verdict'), 'DOP-C02 practice mode grades inline');
+ok(!!$('.explanation'), 'DOP-C02 explanation panel shown');
+ok($('.explanation p').textContent.length > 120,
+   `DOP-C02 explanation has real content (${$('.explanation p').textContent.length} chars)`);
+
+console.log('\n[14] Bank integrity (both exams)');
+let bad = [];
+Object.keys(BANKS).forEach((examId) => {
+  const domains = window.EXAMS[examId].domains;
+  const ids = new Set();
+  BANKS[examId].forEach((q) => {
+    const at = `${examId}/${q.id}`;
+    if (ids.has(q.id)) bad.push(`${at}: duplicate id`);
+    ids.add(q.id);
+    if (!Array.isArray(q.answer) || !q.answer.length) bad.push(`${at}: answer is not a non-empty array`);
+    else q.answer.forEach((L) => { if (!(L in (q.choices || {}))) bad.push(`${at}: answer ${L} missing from choices`); });
+    if (!!q.multi !== (q.answer || []).length > 1) bad.push(`${at}: multi flag disagrees with answer count`);
+    if (!domains[q.domain]) bad.push(`${at}: domain ${q.domain} is not in the exam registry`);
+    if (!q.explanation) bad.push(`${at}: no explanation`);
+  });
+});
+ok(bad.length === 0, `every question is well formed${bad.length ? ' — ' + bad.slice(0, 5).join('; ') : ''}`);
+ok(BANKS['dop-c02'].filter((q) => q.multi).length > 0, 'DOP-C02 bank contains multi-answer questions');
+ok(new Set(BANKS['dop-c02'].map((q) => q.domain)).size === 6, 'DOP-C02 bank covers all six domains');
 
 console.log(`\n${'='.repeat(46)}\n  PASS ${pass}   FAIL ${fail}\n${'='.repeat(46)}`);
 process.exit(fail ? 1 : 0);

@@ -1,5 +1,6 @@
 /* AWS ANS-C01 question bank — generated, do not edit by hand. */
-window.QUESTIONS = [
+window.QUESTION_BANKS = window.QUESTION_BANKS || {};
+window.QUESTION_BANKS['ans-c01'] = [
  {
   "id": "dt-1",
   "source": "ditectrev",
