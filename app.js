@@ -1,24 +1,28 @@
 /* =============================================================================
-   AWS ANS-C01 Practice Exam — application logic
-   Renders into #app. State is kept in memory; theme + last session in storage.
+   AWS Practice Exams — application logic
+   Renders into #app. State is kept in memory; theme + exam choice in storage.
+
+   Everything exam-specific (domain names, pass mark, timer, exam length) comes
+   from window.EXAMS in exams.js, keyed by state.exam. Question banks register
+   themselves into window.QUESTION_BANKS under the same key. Read those through
+   exam() and bank() rather than capturing them in a closure variable — the
+   active exam changes at runtime when the user picks a different card.
    ============================================================================= */
 (function () {
   'use strict';
 
-  var QUESTIONS = (window.QUESTIONS || []).slice();
-  var DOMAIN_NAMES = {
-    1: 'Network Design',
-    2: 'Network Implementation',
-    3: 'Network Management and Operation',
-    4: 'Network Security, Compliance, and Governance'
-  };
-  var PASS_MARK = 75;          // AWS scales to 750/1000; 75% is the usual proxy
-  var EXAM_MINUTES = 170;
-  var EXAM_SIZE = 65;
+  var EXAMS = window.EXAMS || {};
+  var BANKS = window.QUESTION_BANKS || {};
+
+  // Exams that actually have a bank loaded, in registry order.
+  var EXAM_IDS = Object.keys(EXAMS).filter(function (id) {
+    return (BANKS[id] || []).length > 0;
+  });
 
   var app = document.getElementById('app');
 
   var state = {
+    exam: EXAM_IDS[0] || window.DEFAULT_EXAM,
     mode: 'practice',
     view: 'home',
     pool: [],
@@ -30,6 +34,16 @@
     deadline: 0,
     timerId: null
   };
+
+  /* ---------- active exam ---------- */
+
+  // Config for the exam currently selected. Never cached — state.exam moves.
+  function exam() {
+    return EXAMS[state.exam] || { domains: {}, passMark: 75, examMinutes: 170,
+      examSize: 65, name: '', code: '', blurb: '', credits: '', icon: '' };
+  }
+
+  function bank() { return BANKS[state.exam] || []; }
 
   /* ---------- helpers ---------- */
 
@@ -86,45 +100,67 @@
 
   function renderHome() {
     state.view = 'home';
+    var ex = exam();
+    var questions = bank();
     var domains = {};
-    QUESTIONS.forEach(function (q) {
+    questions.forEach(function (q) {
       var d = q.domain || 0;
       domains[d] = (domains[d] || 0) + 1;
     });
-    var multi = QUESTIONS.filter(function (q) { return q.multi; }).length;
+    var multi = questions.filter(function (q) { return q.multi; }).length;
 
     var domainOpts = ['<option value="all">All domains</option>'];
-    Object.keys(DOMAIN_NAMES).forEach(function (d) {
+    Object.keys(ex.domains).forEach(function (d) {
       if (domains[d]) {
         domainOpts.push('<option value="' + d + '">Domain ' + d + ' — ' +
-          esc(DOMAIN_NAMES[d]) + ' (' + domains[d] + ')</option>');
+          esc(ex.domains[d]) + ' (' + domains[d] + ')</option>');
       }
     });
 
-    var counts = [10, 20, 30, 50, 65, QUESTIONS.length].filter(function (n, i, arr) {
-      return n <= QUESTIONS.length && arr.indexOf(n) === i;
-    });
+    var counts = [10, 20, 30, 50, ex.examSize, questions.length]
+      .filter(function (n, i, arr) {
+        return n <= questions.length && arr.indexOf(n) === i;
+      }).sort(function (a, b) { return a - b; });
     var defaultCount = counts.indexOf(20) !== -1 ? 20 : counts[0];
     var countOpts = counts.map(function (n) {
       return '<option value="' + n + '"' + (n === defaultCount ? ' selected' : '') + '>' +
         n + ' questions</option>';
     }).join('');
 
+    // Exam switcher. Only rendered when more than one bank is loaded, so a
+    // single-exam deployment looks exactly as it did before.
+    var examHtml = EXAM_IDS.length > 1
+      ? '<h2>Choose an exam</h2><div class="exam-grid">' +
+          EXAM_IDS.map(function (id) {
+            var e = EXAMS[id];
+            return '<button class="exam-card' + (id === state.exam ? ' selected' : '') +
+              '" data-exam="' + esc(id) + '">' +
+              '<div class="exam-icon">' + esc(e.icon || '') + '</div>' +
+              '<div class="exam-code">' + esc(e.code) + '</div>' +
+              '<div class="exam-name">' + esc(e.short || e.name) + '</div>' +
+              '<div class="exam-count">' + (BANKS[id] || []).length + ' questions</div>' +
+              '</button>';
+          }).join('') +
+        '</div>'
+      : '';
+
     app.innerHTML = '';
     app.appendChild(el(
       '<div>' +
-      '<h1>AWS Certified Advanced Networking – Specialty</h1>' +
-      '<p class="lead">ANS-C01 practice exam. Answer, submit, and get an immediate ' +
-      'verdict with a full explanation.</p>' +
+      '<h1>' + esc(ex.name) + '</h1>' +
+      '<p class="lead">' + esc(ex.code) + ' practice exam. Answer, submit, and get an ' +
+      'immediate verdict with a full explanation.</p>' +
+
+      examHtml +
 
       '<div class="stat-row">' +
-        '<div class="stat"><div class="stat-value">' + QUESTIONS.length + '</div>' +
+        '<div class="stat"><div class="stat-value">' + questions.length + '</div>' +
           '<div class="stat-label">Questions</div></div>' +
         '<div class="stat"><div class="stat-value">' + multi + '</div>' +
           '<div class="stat-label">Multi-answer</div></div>' +
         '<div class="stat"><div class="stat-value">' + Object.keys(domains).filter(function(d){return d!=='0';}).length + '</div>' +
           '<div class="stat-label">Domains covered</div></div>' +
-        '<div class="stat"><div class="stat-value">' + PASS_MARK + '%</div>' +
+        '<div class="stat"><div class="stat-value">' + ex.passMark + '%</div>' +
           '<div class="stat-label">Pass mark</div></div>' +
       '</div>' +
 
@@ -139,7 +175,7 @@
         '<button class="mode-card' + (state.mode === 'exam' ? ' selected' : '') +
           '" data-mode="exam">' +
           '<div class="mode-title">⏱️ Exam simulation</div>' +
-          '<div class="mode-desc">' + EXAM_SIZE + ' questions, ' + EXAM_MINUTES +
+          '<div class="mode-desc">' + ex.examSize + ' questions, ' + ex.examMinutes +
           ' minutes, no feedback until the end — like the real thing.</div>' +
         '</button>' +
       '</div>' +
@@ -159,6 +195,18 @@
       '</div>'
     ));
 
+    var examCards = app.querySelectorAll('.exam-card');
+    Array.prototype.forEach.call(examCards, function (c) {
+      c.addEventListener('click', function () {
+        var id = c.getAttribute('data-exam');
+        if (id === state.exam) return;
+        state.exam = id;
+        store('practice-exam-id', id);
+        applyExamChrome();
+        renderHome();          // stats, domain filter and lengths are per-exam
+      });
+    });
+
     var modeCards = app.querySelectorAll('.mode-card');
     Array.prototype.forEach.call(modeCards, function (c) {
       c.addEventListener('click', function () {
@@ -173,7 +221,7 @@
     app.querySelector('#startBtn').addEventListener('click', function () {
       var n, dom;
       if (state.mode === 'exam') {
-        n = Math.min(EXAM_SIZE, QUESTIONS.length);
+        n = Math.min(ex.examSize, questions.length);
         dom = 'all';
       } else {
         n = parseInt(app.querySelector('#countSel').value, 10);
@@ -186,7 +234,7 @@
   /* ---------- quiz ---------- */
 
   function startQuiz(count, domain) {
-    var pool = QUESTIONS.filter(function (q) {
+    var pool = bank().filter(function (q) {
       return domain === 'all' || String(q.domain) === String(domain);
     });
     pool = shuffle(pool.slice()).slice(0, count);
@@ -200,7 +248,7 @@
     state.startedAt = Date.now();
 
     if (state.mode === 'exam') {
-      state.deadline = Date.now() + EXAM_MINUTES * 60000;
+      state.deadline = Date.now() + exam().examMinutes * 60000;
       startTimer();
     }
     renderQuestion();
@@ -414,7 +462,8 @@
     var total = state.pool.length;
     var right = scoreSoFar();
     var pct = total ? Math.round((right / total) * 100) : 0;
-    var passed = pct >= PASS_MARK;
+    var passMark = exam().passMark;
+    var passed = pct >= passMark;
     var elapsed = Date.now() - state.startedAt;
 
     // per-domain tally
@@ -430,11 +479,12 @@
     var offset = C * (1 - pct / 100);
     var ringColor = passed ? 'var(--color-success)' : 'var(--color-danger)';
 
+    var domainNames = exam().domains;
     var bdHtml = Object.keys(byDom).sort().map(function (d) {
       var b = byDom[d];
       var p = Math.round((b.right / b.total) * 100);
       return '<div class="bd-row">' +
-        '<div class="bd-name">' + (DOMAIN_NAMES[d] ? esc(DOMAIN_NAMES[d]) : 'Uncategorised') + '</div>' +
+        '<div class="bd-name">' + (domainNames[d] ? esc(domainNames[d]) : 'Uncategorised') + '</div>' +
         '<div class="bd-track"><div class="bd-fill" style="width:' + p + '%"></div></div>' +
         '<div class="bd-score">' + b.right + '/' + b.total + '</div>' +
       '</div>';
@@ -493,7 +543,7 @@
         '<div class="verdict-badge ' + (passed ? 'pass' : 'fail') + '">' +
           (passed ? 'PASS' : 'BELOW PASS MARK') + '</div>' +
         '<p class="lead" style="margin:6px 0 0">Finished in ' + fmtTime(elapsed) +
-          ' · pass mark ' + PASS_MARK + '%</p>' +
+          ' · pass mark ' + passMark + '%</p>' +
       '</div>' +
 
       '<div class="breakdown"><h2>By domain</h2>' + bdHtml + '</div>' +
@@ -540,6 +590,25 @@
 
   /* ---------- boot ---------- */
 
+  // Page title and footer follow the active exam; both live in the static
+  // shell, so they are updated imperatively rather than by a render function.
+  function applyExamChrome() {
+    var ex = exam();
+    document.title = 'AWS ' + ex.code + ' — Practice Tests Exams Platform';
+
+    var note = document.getElementById('footerNote');
+    if (note) {
+      note.textContent = 'Study material for the ' + ex.name + ' (' + ex.code +
+        ') exam. Not affiliated with or endorsed by Amazon Web Services.';
+    }
+
+    var credits = document.getElementById('footerCredits');
+    if (credits) {
+      credits.textContent = 'Question bank: ' + bank().length + ' questions — ' +
+        ex.credits + ' Explanations generated for study use; verify against AWS docs.';
+    }
+  }
+
   function boot() {
     initTheme();
     document.getElementById('brandHome').addEventListener('click', function (e) {
@@ -549,18 +618,17 @@
       renderHome();
     });
 
-    var credits = document.getElementById('footerCredits');
-    if (credits) {
-      credits.textContent = 'Question bank: ' + QUESTIONS.length + ' questions — ' +
-        'community set from the Ditectrev ANS-C01 open practice repo plus originals ' +
-        'written for this app. Explanations generated for study use; verify against AWS docs.';
-    }
+    var savedExam = store('practice-exam-id');
+    if (savedExam && EXAM_IDS.indexOf(savedExam) !== -1) state.exam = savedExam;
 
-    if (!QUESTIONS.length) {
+    if (!EXAM_IDS.length) {
+      document.title = 'Practice Tests Exams Platform';
       app.innerHTML = '<div class="empty"><h2>No questions loaded</h2>' +
-        '<p>questions.js is missing or empty.</p></div>';
+        '<p>No questions-*.js bank registered into window.QUESTION_BANKS.</p></div>';
       return;
     }
+
+    applyExamChrome();
     renderHome();
   }
 
