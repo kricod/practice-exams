@@ -46,7 +46,7 @@ Grading is set-equality (`sameSet`), so a multi-answer question is correct only 
 - `domain` is 1–4, mapped to names by `DOMAIN_NAMES` in `app.js`. A question with a domain outside that map still renders but lands in an "Uncategorised" breakdown row.
 - `multi: true` switches the inputs to checkboxes and shows a "Select TWO/THREE" tag derived from `answer.length`.
 - `choices` keys are sorted alphabetically at render; the letter shown is the key itself.
-- Optional `answer_disputed: true` adds a contested-answer-key warning under the explanation. Exactly one question (`dt-84`) uses it. That entry also carries a `suggested_answer` field, which **nothing in `app.js` reads** — grading always uses `answer`, so `dt-84` is currently graded against a key its own explanation argues is wrong.
+- Optional `answer_disputed: true` adds a contested-answer-key warning under the explanation. Exactly one question (`dt-84`) uses it. That entry also carries a `source_answer` field holding the upstream key (`["D"]`), which **nothing in `app.js` reads** — grading always uses `answer`, so `dt-84` is graded as `C`, the key its explanation argues for.
 - 91 questions come from the Ditectrev community repo (`source: "ditectrev"`, ids `dt-*`), 80 were written for this app (`source: "authored"`). Explanations throughout were generated for this app, including for the Ditectrev questions, whose upstream ships answer keys only.
 
 Question counts, domain counts, multi-answer count, and the length-selector options are all derived from the bank at render time, so adding questions updates the home screen stats automatically. The README quotes fixed numbers (171, the domain split) that will drift if the bank changes.
