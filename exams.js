@@ -54,6 +54,27 @@ window.EXAMS = {
     },
     credits: 'Written for this app. No open community bank exists for DOP-C02, ' +
       'so every question here is original.'
+  },
+  'dea-c01': {
+    id: 'dea-c01',
+    code: 'DEA-C01',
+    icon: '🧮',
+    short: 'Data Engineer',
+    name: 'AWS Certified Data Engineer – Associate',
+    blurb: 'Ingestion and transformation, store management, data operations ' +
+      'and data security and governance.',
+    passMark: 72,          // AWS scales to 720/1000 for this exam
+    examMinutes: 130,
+    examSize: 65,
+    domains: {
+      1: 'Data Ingestion and Transformation',
+      2: 'Data Store Management',
+      3: 'Data Operations and Support',
+      4: 'Data Security and Governance'
+    },
+    credits: 'Written for this app. ExamTopics is paywalled past page 1 and its ' +
+      'question text is copyrighted, so nothing was imported — every question ' +
+      'here is original, written against the published exam guide.'
   }
 };
 

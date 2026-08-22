@@ -20,6 +20,7 @@ window.scrollTo = () => {};
 window.eval(fs.readFileSync(path.join(APP, 'exams.js'), 'utf8'));
 window.eval(fs.readFileSync(path.join(APP, 'questions-ans-c01.js'), 'utf8'));
 window.eval(fs.readFileSync(path.join(APP, 'questions-dop-c02.js'), 'utf8'));
+window.eval(fs.readFileSync(path.join(APP, 'questions-dea-c01.js'), 'utf8'));
 window.eval(fs.readFileSync(path.join(APP, 'app.js'), 'utf8'));
 
 const doc = window.document;
@@ -41,8 +42,9 @@ console.log('\n[1] Home screen');
 const BANKS = window.QUESTION_BANKS;
 ok(BANKS['ans-c01'].length > 100, `ANS-C01 bank loaded (${BANKS['ans-c01'].length})`);
 ok(BANKS['dop-c02'].length > 100, `DOP-C02 bank loaded (${BANKS['dop-c02'].length})`);
-ok(Object.keys(window.EXAMS).length === 2, 'exam registry holds both exams');
-ok($$('.exam-card').length === 2, 'exam switcher renders one card per exam');
+ok(BANKS['dea-c01'].length > 100, `DEA-C01 bank loaded (${BANKS['dea-c01'].length})`);
+ok(Object.keys(window.EXAMS).length === 3, 'exam registry holds all three exams');
+ok($$('.exam-card').length === 3, 'exam switcher renders one card per exam');
 ok($$('.exam-card')[0].classList.contains('selected'), 'first exam is selected on boot');
 ok(!!$('#startBtn'), 'start button rendered');
 ok($$('.mode-card').length === 2, 'two mode cards');
@@ -185,7 +187,32 @@ ok(!!$('.explanation'), 'DOP-C02 explanation panel shown');
 ok($('.explanation p').textContent.length > 120,
    `DOP-C02 explanation has real content (${$('.explanation p').textContent.length} chars)`);
 
-console.log('\n[14] Bank integrity (both exams)');
+console.log('\n[14] Switching to DEA-C01');
+$('#brandHome').click();
+$$('.exam-card')[2].click();                      // -> DEA-C01
+ok(/Data Engineer/.test($('h1').textContent), 'home retitles for DEA-C01: ' + $('h1').textContent.trim());
+ok($$('.exam-card')[2].classList.contains('selected'), 'DEA-C01 card is now selected');
+ok($$('#domainSel option').length === 5, `DEA-C01 domain filter shows 4 domains plus All (${$$('#domainSel option').length})`);
+ok(/^220$/.test($('.stat-value').textContent.trim()), 'stat row reflects the DEA-C01 bank size: ' + $('.stat-value').textContent.trim());
+ok(/DEA-C01/.test(doc.title), 'page title follows the active exam: ' + doc.title);
+$$('.mode-card')[1].click();                      // exam simulation
+ok(/65 questions, 130 minutes/.test($$('.mode-card')[1].textContent.replace(/\s+/g, ' ')),
+   'DEA-C01 exam card states this exam\'s size and duration');
+$('#startBtn').click();
+ok(/Question 1 of 65/.test($('.quiz-meta').textContent.replace(/\s+/g, ' ')), 'DEA-C01 exam pool is 65 questions');
+$('#brandHome').click();
+$$('.mode-card')[0].click();                      // back to practice
+$('#countSel').value = '10';
+$('#startBtn').click();
+const deaInput = $('.choice input');
+deaInput.checked = true;
+deaInput.dispatchEvent(new window.Event('change', { bubbles: true }));
+$('#submitBtn').click();
+ok(!!$('.verdict'), 'DEA-C01 practice mode grades inline');
+ok($('.explanation p').textContent.length > 120,
+   `DEA-C01 explanation has real content (${$('.explanation p').textContent.length} chars)`);
+
+console.log('\n[15] Bank integrity (all exams)');
 let bad = [];
 Object.keys(BANKS).forEach((examId) => {
   const domains = window.EXAMS[examId].domains;
@@ -204,6 +231,9 @@ Object.keys(BANKS).forEach((examId) => {
 ok(bad.length === 0, `every question is well formed${bad.length ? ' — ' + bad.slice(0, 5).join('; ') : ''}`);
 ok(BANKS['dop-c02'].filter((q) => q.multi).length > 0, 'DOP-C02 bank contains multi-answer questions');
 ok(new Set(BANKS['dop-c02'].map((q) => q.domain)).size === 6, 'DOP-C02 bank covers all six domains');
+ok(BANKS['dea-c01'].filter((q) => q.multi).length >= 30, `DEA-C01 bank contains multi-answer questions (${BANKS['dea-c01'].filter((q) => q.multi).length})`);
+ok(new Set(BANKS['dea-c01'].map((q) => q.domain)).size === 4, 'DEA-C01 bank covers all four domains');
+ok(BANKS['dea-c01'].every((q) => q.source === 'authored'), 'every DEA-C01 question is original work');
 
 console.log(`\n${'='.repeat(46)}\n  PASS ${pass}   FAIL ${fail}\n${'='.repeat(46)}`);
 process.exit(fail ? 1 : 0);

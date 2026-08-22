@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A single-page practice-exam app covering two AWS certifications: Advanced Networking – Specialty (ANS-C01) and DevOps Engineer – Professional (DOP-C02). Zero build step, zero dependencies at runtime: `index.html` loads `exams.js`, then each `questions-<id>.js` bank, then `app.js` as plain `<script>` tags. There is no `package.json`, no bundler, no framework.
+A single-page practice-exam app covering three AWS certifications: Advanced Networking – Specialty (ANS-C01), DevOps Engineer – Professional (DOP-C02) and Data Engineer – Associate (DEA-C01). Zero build step, zero dependencies at runtime: `index.html` loads `exams.js`, then each `questions-<id>.js` bank, then `app.js` as plain `<script>` tags. There is no `package.json`, no bundler, no framework.
 
 ## Commands
 
@@ -16,13 +16,13 @@ npm install jsdom              # test dependency (not vendored; no package.json)
 node test-app.js               # full suite — all-or-nothing, exits 1 on any failure
 ```
 
-There is no lint step and no way to run a single test: `test-app.js` is one linear script of 62 `ok()` assertions across fourteen numbered sections. To isolate a section while debugging, comment out the later ones — the sections drive one long-lived jsdom instance, share its mutable DOM state, and must run in order. A section that leaves the app in an unexpected view (e.g. exam mode) breaks every section after it. Sections 1–10 run against ANS-C01; section 11 switches to DOP-C02 and 12–13 stay there, so anything appended runs against the DOP bank unless it switches back. Section 14 is pure data validation over both banks and touches no DOM.
+There is no lint step and no way to run a single test: `test-app.js` is one linear script of 75 `ok()` assertions across fifteen numbered sections. To isolate a section while debugging, comment out the later ones — the sections drive one long-lived jsdom instance, share its mutable DOM state, and must run in order. A section that leaves the app in an unexpected view (e.g. exam mode) breaks every section after it. Sections 1–10 run against ANS-C01; section 11 switches to DOP-C02 and 12–13 stay there; section 14 switches to DEA-C01, so anything appended runs against the DEA bank unless it switches back. Section 15 is pure data validation over all three banks and touches no DOM.
 
 ## Architecture
 
 ### Multi-exam wiring
 
-`exams.js` defines `window.EXAMS`, keyed by exam ID (`ans-c01`, `dop-c02`). Each entry carries the display strings plus the four things that used to be hardcoded constants: `domains` (the domain-number → name map), `passMark`, `examMinutes` and `examSize`. Each `questions-<id>.js` registers its array into `window.QUESTION_BANKS` under the same key.
+`exams.js` defines `window.EXAMS`, keyed by exam ID (`ans-c01`, `dop-c02`, `dea-c01`). Each entry carries the display strings plus the four things that used to be hardcoded constants: `domains` (the domain-number → name map), `passMark`, `examMinutes` and `examSize`. Each `questions-<id>.js` registers its array into `window.QUESTION_BANKS` under the same key.
 
 `app.js` reads both through the `exam()` and `bank()` helpers rather than closure variables, because `state.exam` moves at runtime when the user clicks an exam card. `EXAM_IDS` is computed once at load and lists only exams that actually have a non-empty bank, so a registry entry without a bank is skipped rather than rendering an empty home screen. The exam switcher is only rendered when more than one bank is loaded.
 
@@ -57,7 +57,7 @@ Both banks are generated files that say "do not edit by hand" at the top. There 
 ```
 
 - `answer` is **always** an array, even for single-answer questions.
-- `domain` is a key into that exam's `domains` map in `exams.js` — 1–4 for ANS-C01, 1–6 for DOP-C02. A question with a domain outside its exam's map still renders but lands in an "Uncategorised" breakdown row.
+- `domain` is a key into that exam's `domains` map in `exams.js` — 1–4 for ANS-C01, 1–6 for DOP-C02, 1–4 for DEA-C01. A question with a domain outside its exam's map still renders but lands in an "Uncategorised" breakdown row.
 - `multi: true` switches the inputs to checkboxes and shows a "Select TWO/THREE" tag derived from `answer.length`.
 - `choices` keys are sorted alphabetically at render; the letter shown is the key itself.
 - Optional `answer_disputed: true` adds a contested-answer-key warning under the explanation. Exactly one question (`dt-84`) uses it. That entry also carries a `source_answer` field holding the upstream key (`["D"]`), which **nothing in `app.js` reads** — grading always uses `answer`, so `dt-84` is graded as `C`, the key its explanation argues for.
@@ -71,8 +71,16 @@ All `source: "authored"`, ids `dop-*`. There is no Ditectrev repo for DOP-C02 an
 
 Counts are weighted to the official guide: 55 SDLC Automation, 43 Configuration Management and IaC, 37 Resilient Cloud Solutions, 38 Monitoring and Logging, 35 Incident and Event Response, 42 Security and Compliance. Only 21 of 250 are multi-answer, a noticeably lower share than the ANS bank's 32 of 171; if you extend this bank, multi-answer questions are the gap.
 
-Question counts, domain counts, multi-answer count, and the length-selector options are all derived from the active bank at render time, so adding questions updates the home screen stats automatically. The README quotes fixed numbers that will drift if either bank changes.
+### `questions-dea-c01.js` — 299 KB, 220 questions
+
+All `source: "authored"`, ids `dea-*`. ExamTopics is blocked by this environment's egress proxy (HTTP 403 on `www.examtopics.com`) and is paywalled past page 1 and copyrighted regardless, so nothing was imported — the whole bank is original, written against the published exam guide.
+
+Counts are weighted to the guide: 75 Data Ingestion and Transformation (34%), 57 Data Store Management (26%), 48 Data Operations and Support (22%), 40 Data Security and Governance (18%). 34 of 220 are multi-answer, spread across all four domains — deliberately a higher share than the DOP bank's 21 of 250, since that was the gap called out there.
+
+Note the real DEA-C01 delivers 65 questions of which only 50 are scored; `examSize` is 65 and the app scores all of them, so the percentage is a proxy rather than the scaled 720/1000 AWS reports. `passMark` is 72.
+
+Question counts, domain counts, multi-answer count, and the length-selector options are all derived from the active bank at render time, so adding questions updates the home screen stats automatically. The README quotes fixed numbers that will drift if any bank changes.
 
 ## Constants
 
-The per-exam constants live in `exams.js`, not `app.js`. `test-app.js` asserts on ANS-C01's 65-question exam phrasing (section 8) and on DOP-C02's "75 questions, 180 minutes" card text and 75-question pool (section 12), so changing either exam's `examSize` or `examMinutes` means updating the suite.
+The per-exam constants live in `exams.js`, not `app.js`. `test-app.js` asserts on ANS-C01's 65-question exam phrasing (section 8), on DOP-C02's "75 questions, 180 minutes" card text and 75-question pool (section 12), and on DEA-C01's "65 questions, 130 minutes" card text, 65-question pool and 220-question bank size (section 14), so changing any exam's `examSize`, `examMinutes` or bank size means updating the suite.
